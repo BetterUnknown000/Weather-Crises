@@ -2,33 +2,53 @@ import pandas as pd
 
 def make_features(df):
     """
-    This function takes the weather data from Open-Meteo.py in datasets
-    and turns it into stats that can be used for our K-Means algorithm for clustering
+    Turn an hourly Open-Meteo dataframe into features for K-Means.
     """
     if df.empty:
         print("Got call from Open-Meteo.py, but features.py finds it empty.")
         return {}
 
     try:
-        # Make sure everything is numeric
-        for col in ["wind_speed_10m", "wind_gusts_10m", "precipitation", "surface_pressure"]:
+        # Ensure numeric types
+        for col in ["temperature_2m", "wind_speed_10m", "wind_gusts_10m", "precipitation", "surface_pressure"]:
             df[col] = pd.to_numeric(df[col], errors="coerce")
 
-        # Basic stats that we should be getting
+        # Wind
         avg_wind = df["wind_speed_10m"].mean()
         max_gust = df["wind_gusts_10m"].max()
-        total_rain = df["precipitation"].sum()
-        pressure_change = df["surface_pressure"].iloc[-1] - df["surface_pressure"].iloc[0]
         wind_var = df["wind_speed_10m"].var()
+        gust_ratio = (max_gust / avg_wind) if avg_wind else 0.0
+
+        # Rain / precipitation
+        total_rain = df["precipitation"].sum()
+        mean_rain = df["precipitation"].mean()
+        rain_hours = int((df["precipitation"] > 0).sum())
+
+        # Pressure
+        pressure_change = df["surface_pressure"].iloc[-1] - df["surface_pressure"].iloc[0]
+        avg_pressure = df["surface_pressure"].mean()
+
+        # Temperature
+        max_temp = df["temperature_2m"].max()
+        min_temp = df["temperature_2m"].min()
+        temp_range = max_temp - min_temp
+        # NEW: temperature difference over the window (last - first)
+        temp_diff = df["temperature_2m"].iloc[-1] - df["temperature_2m"].iloc[0]
 
         return {
+            "temp_diff": float(temp_diff),          # was "avg_temp"
+            "temp_range": float(temp_range),
             "avg_wind": float(avg_wind),
             "max_gust": float(max_gust),
+            "gust_ratio": float(gust_ratio),
             "total_rain": float(total_rain),
+            "mean_rain": float(mean_rain),
+            "rain_hours": float(rain_hours),
             "pressure_change": float(pressure_change),
+            "avg_pressure": float(avg_pressure),
             "wind_var": float(wind_var),
         }
 
     except Exception as e:
-        print("Error while making features in features.py: ", e)
+        print("Error while making features in features.py:", e)
         return {}
