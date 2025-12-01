@@ -1,7 +1,7 @@
 import requests
 import pandas as pd
 
-def get_hourly(lat, lon, hours=24):
+def get_hourly(lat, lon, hours=12):
     """
     This function simply pulls the recent hourly weather data
     from the Open-Meteo API. This is going to return
@@ -39,9 +39,3 @@ def get_hourly(lat, lon, hours=24):
         # If an error occurs, print out so we know and return empty
         print("There was a error getting data from open_meteo.py: ", e)
         return pd.DataFrame()
-
-if __name__ == "__main__":
-    print("Testing Open-Meteo data pull...")
-    df = get_hourly(40.8, -77.86) # State College coords
-    print(df.head())
-    print("Rows: ", len(df))
