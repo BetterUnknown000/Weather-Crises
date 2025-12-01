@@ -146,7 +146,7 @@
           ? colors[r.cluster % colors.length] : "#999999";
         const tip =
           (r.index ?? "City") + "\n" +
-          "Avg Temp: " + fmt(r["Average Temperature (F)"]) + " F";
+          "|| Avg Temp: " + fmt(r["Average Temperature (F)"]) + " F";
         const mk = L.circleMarker([r.lat, r.lon], {
           radius: 7, color:"#fff", weight:1, fillColor:c, fillOpacity:0.9
         }).bindTooltip(tip);
