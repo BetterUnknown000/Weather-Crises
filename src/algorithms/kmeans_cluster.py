@@ -1,31 +1,44 @@
 from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import silhouette_score
+import numpy as np
 import pandas as pd
 
-def cluster_weather(data_dict, k=2):
-    """
-    Takes a dictionary that is in the form city -> feature, and groups
-    them into clusters using K-Means.
-    """
+def _scale(vals):
+    return StandardScaler().fit_transform(vals)
+
+def cluster_weather(data_dict, k=3):
     if not data_dict:
-        print("No data passed into cluster_weather() for K-Means to operate.")
         return None, None
-
-    # Turns the dictionary into DataFrame
     df = pd.DataFrame.from_dict(data_dict, orient="index")
+    X = _scale(df.values)
+    km = KMeans(n_clusters=k, n_init="auto", random_state=42)
+    labels = km.fit_predict(X)
+    df["cluster"] = labels
+    return df, km
 
-    # Save city names for later
-    names = df.index.tolist()
+def choose_k(data_dict, min_k=3, max_k=6, tie_k=4):
+    """Silhouette only, forbid k=2. If scores are flat, fall back to tie_k."""
+    if not data_dict:
+        return tie_k
+    df = pd.DataFrame.from_dict(data_dict, orient="index")
+    X = _scale(df.values)
 
-    try:
-        # Run K-Means with k clusters
-        model = KMeans(n_clusters=k, n_init="auto", random_state=42)
-        model.fit(df)
+    ks, scores = [], []
+    for k in range(min_k, max_k + 1):
+        try:
+            km = KMeans(n_clusters=k, n_init="auto", random_state=42)
+            labels = km.fit_predict(X)
+            s = silhouette_score(X, labels)
+            ks.append(k); scores.append(s)
+        except Exception:
+            pass
 
-        # Add the cluster labels to DataFrame
-        df["cluster"] = model.labels_
+    if not scores:
+        return tie_k
 
-        return df, model
-
-    except Exception as e:
-        print("Error while clustering in kmeans_cluster.py: ", e)
-        return None, None
+    best_k = ks[int(np.argmax(scores))]
+    # if all scores within 0.02 of each other, pick tie_k (e.g., 4)
+    if (max(scores) - min(scores)) < 0.02 and tie_k in ks:
+        return tie_k
+    return best_k

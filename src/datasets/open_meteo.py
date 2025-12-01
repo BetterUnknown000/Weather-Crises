@@ -13,7 +13,13 @@ def get_hourly(lat, lon, hours=24):
             "https://api.open-meteo.com/v1/forecast?"
             + "latitude=" + str(lat)
             + "&longitude=" + str(lon)
-            + "&hourly=temperature_2m,wind_speed_10m,wind_gusts_10m,precipitation,surface_pressure"
+            + "&hourly="
+              "temperature_2m,"
+              "wind_speed_10m,wind_gusts_10m,"
+              "precipitation,precipitation_probability,"
+              "surface_pressure,"
+              "relative_humidity_2m,dew_point_2m,"
+              "cloudcover,snowfall"
             + "&timezone=America/New_York"
     )
     try:

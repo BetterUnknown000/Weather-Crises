@@ -10,7 +10,7 @@ def make_features(df):
 
     try:
         # Ensure numeric types
-        for col in ["temperature_2m", "wind_speed_10m", "wind_gusts_10m", "precipitation", "surface_pressure"]:
+        for col in ["temperature_2m", "wind_speed_10m", "wind_gusts_10m", "precipitation", "surface_pressure", "relative_humidity_2m", "dew_point_2m", "precipitation_probability", "cloudcover", "snowfall",]:
             df[col] = pd.to_numeric(df[col], errors="coerce")
 
         # Wind
@@ -32,11 +32,19 @@ def make_features(df):
         max_temp = df["temperature_2m"].max()
         min_temp = df["temperature_2m"].min()
         temp_range = max_temp - min_temp
-        # NEW: temperature difference over the window (last - first)
+        avg_temp = df["temperature_2m"].mean()
+
         temp_diff = df["temperature_2m"].iloc[-1] - df["temperature_2m"].iloc[0]
 
+        humidity_mean = df["relative_humidity_2m"].mean() if "relative_humidity_2m" in df else 0.0
+        dewpoint_change = (df["dew_point_2m"].iloc[-1] - df["dew_point_2m"].iloc[0]) if "dew_point_2m" in df else 0.0
+        precip_prob_max = df["precipitation_probability"].max() if "precipitation_probability" in df else 0.0
+        cloudcover_mean = df["cloudcover"].mean() if "cloudcover" in df else 0.0
+        total_snow = df["snowfall"].sum() if "snowfall" in df else 0.0
+
         return {
-            "temp_diff": float(temp_diff),          # was "avg_temp"
+            "temp_diff": float(temp_diff),
+            "avg_temp": float(avg_temp),
             "temp_range": float(temp_range),
             "avg_wind": float(avg_wind),
             "max_gust": float(max_gust),
@@ -47,6 +55,11 @@ def make_features(df):
             "pressure_change": float(pressure_change),
             "avg_pressure": float(avg_pressure),
             "wind_var": float(wind_var),
+            "humidity_mean": float(humidity_mean),
+            "dewpoint_change": float(dewpoint_change),
+            "precip_prob_max": float(precip_prob_max),
+            "cloudcover_mean": float(cloudcover_mean),
+            "total_snow": float(total_snow)
         }
 
     except Exception as e:
