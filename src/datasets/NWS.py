@@ -1,7 +1,23 @@
 import requests
 import pandas as pd
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
+# Adding for speed issues.
+_session = requests.Session()
+_retry = Retry(
+    total=3,
+    backoff_factor=0.5,
+    status_forcelist=(429, 500, 502, 503, 504),
+    allowed_methods=frozenset(["GET", "HEAD"])
+)
+_adapter = HTTPAdapter(max_retries=_retry, pool_connections=100, pool_maxsize=100)
+_session.mount("https://", _adapter)
 
+_session.headers.update({
+    "User-Agent": "Weather-Crises-Project/1.0 (github.com)",
+    "Accept": "application/geo+json"
+})
 
 # okay so basically, I modeled after your open_meteo dataset loader with some adjustments
 def get_alerts(lat, lon, hours=24):
@@ -23,7 +39,9 @@ def get_alerts(lat, lon, hours=24):
 
     try:
         # Get the data from the API
-        r = requests.get(url, headers=headers, timeout=30)
+        r = _session.get(url, headers=headers, timeout=(3.05, 20))
+        r.raise_for_status() # Fail fast to stop redundancy
+
         data = r.json()
 
         # Extract alert properties from features
@@ -75,7 +93,8 @@ if __name__ == "__main__":
         "Accept": "application/geo+json"
     }
     try:
-        r = requests.get(url, headers=headers, timeout=30)
+        r = _session.get(url, headers=headers, timeout=(3.05, 20))
+        r.raise_for_status()
         data = r.json()
 
         # Extract alert properties from features

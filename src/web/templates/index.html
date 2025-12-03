@@ -11,10 +11,78 @@
     body { background:#f8f9fa; }
     #map { height:400px; border-radius:10px; }
     .legend-dot { display:inline-block; width:14px; height:14px; margin-right:6px; border:1px solid #fff; border-radius:3px; }
+    .alert-banner {
+      background: linear-gradient(90deg, #ffb703, #fb8500);
+      color: #fff;
+      border-radius: 10px;
+      padding: 12px 18px;
+      margin-bottom: 20px;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+    }
+    .alert-banner strong {
+      font-size: 1.1em;
+      letter-spacing: 0.5px;
+    }
+    .alert-chip {
+      display: inline-block;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: #fff;
+      border-radius: 999px;
+      padding: 6px 12px;
+      margin: 5px 6px 0 0;
+      font-size: 0.9em;
+      transition: background 0.2s ease;
+    }
+    .alert-chip:hover {
+      background: rgba(255,255,255,0.3);
+    }
+    .alerts-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 24px;
+    }
+    .alerts-table th {
+      background-color: #023047;
+      color: #fff;
+      text-align: left;
+      padding: 10px;
+    }
+    .alerts-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #eee;
+    }
+    .alerts-table tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+    .alerts-table tr:hover {
+      background-color: #fffae6;
+    }
   </style>
 </head>
 <body class="container py-3">
   <h3 class="mb-3">Weather Clusters</h3>
+
+  {% if banner_alerts and banner_alerts|length > 0 %}
+  <div class="alert-banner">
+    <strong>Active Weather Alerts</strong>
+    <div style="margin-top:6px; font-size:0.9em; opacity:0.85;">
+      Sorted by severity, then state, then city
+    </div>
+    <div>
+      {% for a in banner_alerts %}
+        <span class="alert-chip"
+            data-lat="{{ a.lat }}" data-lon="{{ a.lon }}" data-city="{{ a.city }}">
+        {{ a.event }} - {{ a.city }} (score {{ a.score }})
+        </span>
+      {% endfor %}
+    </div>
+  </div>
+  {% else %}
+  <div class="alert-banner" style="background:#4caf50;">
+    <strong>No active alerts</strong>
+  </div>
+  {% endif %}
 
   <!-- simple filter -->
   <div class="d-flex align-items-center mb-2">
@@ -75,7 +143,7 @@
       <tbody id="city-body">
         {% for r in rows %}
         <tr>
-          <td>{{ r.index }}</td>
+          <td>{{ r.city }}</td>
           <td>{{ r.cluster }}</td>
           {% for col in display_cols %}
             <td>{{ r[col] }}</td>
@@ -97,7 +165,7 @@
 
     function byState(rows, state) {
       if (state === "ALL") return rows;
-      return rows.filter(r => (r.index || "").trim().endsWith(", " + state));
+      return rows.filter(r => (r.city || "").trim().endsWith(", " + state));
     }
 
     function computeCounts(rows) {
@@ -145,7 +213,7 @@
         const c = (typeof r.cluster === "number" && r.cluster >= 0)
           ? colors[r.cluster % colors.length] : "#999999";
         const tip =
-          (r.index ?? "City") + "\n" +
+          (r.city ?? "City") + "\n" +
           "|| Avg Temp: " + fmt(r["Average Temperature (F)"]) + " F";
         const mk = L.circleMarker([r.lat, r.lon], {
           radius: 7, color:"#fff", weight:1, fillColor:c, fillOpacity:0.9
@@ -208,7 +276,7 @@
       cbody.innerHTML = "";
       rows.forEach(r => {
         const tr = document.createElement("tr");
-        let html = `<td>${r.index}</td><td>${r.cluster}</td>`;
+        let html = `<td>${r.city}</td><td>${r.cluster}</td>`;
         displayCols.forEach(col => { html += `<td>${fmt(r[col])}</td>`; });
         tr.innerHTML = html;
         cbody.appendChild(tr);
@@ -216,6 +284,44 @@
     }
 
     render("ALL");
+    let highlight = null;
+
+  function focusPoint(lat, lon, city) {
+    if (!map) return;
+    map.setView([lat, lon], 9); // zoom in a bit
+
+    // remove old highlight
+    if (highlight) {
+      try { map.removeLayer(highlight); } catch (_) {}
+      highlight = null;
+    }
+
+    // draw a temporary ring highlight
+    highlight = L.circleMarker([lat, lon], {
+      radius: 11, color: "#000", weight: 2, fillColor: "#ffff00", fillOpacity: 0.6
+    }).addTo(map).bindTooltip(city).openTooltip();
+
+    // fade it out after a few seconds
+    setTimeout(() => {
+      if (highlight) {
+        try { map.removeLayer(highlight); } catch (_) {}
+        highlight = null;
+      }
+    }, 4000);
+  }
+
+  // delegate click events on chips
+  document.addEventListener("click", (e) => {
+    const el = e.target;
+    if (el.classList && el.classList.contains("alert-chip")) {
+      const lat = parseFloat(el.dataset.lat);
+      const lon = parseFloat(el.dataset.lon);
+      const city = el.dataset.city || "Location";
+      if (!isNaN(lat) && !isNaN(lon)) {
+        focusPoint(lat, lon, city);
+      }
+    }
+  });
     document.getElementById("stateFilter").addEventListener("change", e => render(e.target.value));
   </script>
 </body>
