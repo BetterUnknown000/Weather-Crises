@@ -1,4 +1,4 @@
-# Weather-Crises
+# Weather Crises
 CMPSC 463 --- Project 2
 
 # Weather Pattern Visualizer
