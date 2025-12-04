@@ -9,6 +9,10 @@ This project utilized two major algorithms in conjunction with two different dyn
   - K-means Clustering Algorithm
   - Weighted Scoring Model
 
+# K-means with OpenMeteo
+
 The K-means clustering algorithm is used with OpenMeteo in order to visualize and locate significant weather events. OpenMeteo provides data on weather reports around the world. We have a dictionary of locations surrounding Abington, PA that are passed into OpenMeteo to collect weather data, which is clustered with K-means.
+
+# Weighted Scoring with NWS
 
 The Weighted Scoring Model is used with NWS in order to create a prioritized list of weather alerts. Weather alerts are pulled from NWS, utilizing the same location dictionary as before. Alerts are ranked by NWS with severity, certainty and urgency. Each of these features are ranked by one of five different terms that represent the increasing level. Our weighted scoring model rips these emergency alerts, and then provides an average score from 1-5 based on different weighted combinations of severity, certainty and urgency. Once all of these alerts have been ranked by the algorithm, a prioritized list is produced where emergency alerts with the highest score, which represents the most significant emergency, are sent first, while those with the lowest scores, which represents the least significant emergencies, are sent last.
