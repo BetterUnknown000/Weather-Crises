@@ -6,7 +6,7 @@ Our project intends to utilize clustering algorithms such as K-means and a Weigh
 
 # Overview
 This project utilized two major algorithms in conjunction with two different dynamic datasets to produce the weather pattern visualizer and emergency alert prioritizer.
-  - K-means Clustering Algorithm
+  - K-means Clustering
   - Weighted Scoring Model
 
 # K-means with OpenMeteo
@@ -16,3 +16,6 @@ The K-means clustering algorithm is used with OpenMeteo in order to visualize an
 # Weighted Scoring with NWS
 
 The Weighted Scoring Model is used with NWS in order to create a prioritized list of weather alerts. Weather alerts are pulled from NWS, utilizing the same location dictionary as before. Alerts are ranked by NWS with severity, certainty and urgency. Each of these features are ranked by one of five different terms that represent the increasing level. Our weighted scoring model rips these emergency alerts, and then provides an average score from 1-5 based on different weighted combinations of severity, certainty and urgency. Once all of these alerts have been ranked by the algorithm, a prioritized list is produced where emergency alerts with the highest score, which represents the most significant emergency, are sent first, while those with the lowest scores, which represents the least significant emergencies, are sent last.
+
+# Installation and Usage
+Upon installing the program, all that is needed is to run main.py, which will automatically connect to all other relevant files and datasets, and properly display without any further action.
