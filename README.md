@@ -11,7 +11,7 @@ This project utilized two major algorithms in conjunction with two different dyn
 
 # K-means with OpenMeteo
 
-The K-means clustering algorithm is used with OpenMeteo in order to visualize and locate significant weather events. OpenMeteo provides data on weather reports around the world. We have a dictionary of locations surrounding Abington, PA that are passed into OpenMeteo to collect weather data, which is clustered with K-means.
+The K-means clustering algorithm is used with OpenMeteo in order to visualize and locate significant weather events. OpenMeteo provides data on weather reports around the world. We have a dictionary of locations surrounding Abington, PA that are passed into OpenMeteo to collect weather data, which is reshaped in order to be used with K-means. By utilizing the K-means clustering algorithm, we are able to produce clusters of cities that share similar weather patterns. By visualizing these clusters on a map, we are able to determine the general weather of a given area by identifying which clusters relate to which weather events.
 
 # Weighted Scoring with NWS
 
